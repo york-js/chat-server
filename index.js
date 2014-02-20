@@ -70,7 +70,7 @@ routes.GET[ "/" ] = function( request, response ) {
 	var session = {
 		nick: nick,
 		sessionId: sessionId,
-		timestamp: Date.now()
+		timestamp: new Date()
 	};
 	nicks[ nick ] = true;
 	users[ sessionId ] = session;
@@ -100,7 +100,8 @@ routes.GET[ "/msg" ] = function( request, response ) {
 
 	server.messages.push({
 		nick: users[ sessionId ].nick,
-		msg: request.parsedUrl.query.msg
+		msg: request.parsedUrl.query.msg,
+		timestamp: new Date()
 	});
 	response.end();
 };

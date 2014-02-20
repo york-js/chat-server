@@ -6,6 +6,9 @@ module.exports = function( server ) {
 				"<p>" +
 				message.nick + ": " +
 				message.msg +
+				" [" + message.timestamp.getHours() + ":" +
+					message.timestamp.getMinutes() + ":" +
+					message.timestamp.getSeconds() + "]" +
 				"</p>"
 			);
 		});
