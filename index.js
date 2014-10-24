@@ -1,3 +1,4 @@
+var fs = require( "fs" );
 var http = require( "http" );
 var url = require( "url" );
 var crypto = require( "crypto" );
@@ -10,6 +11,7 @@ process.on( "uncaughtException", function( error ) {
 
 var users = {};
 var nicks = {};
+var pending = [];
 
 var routes = {
 	GET: {},
@@ -21,20 +23,36 @@ function notFound( request, response ) {
 	response.end();
 }
 
+function staticFile( path ) {
+	return function( request, response ) {
+		var file = fs.createReadStream( path, {
+			encoding: "utf8"
+		});
+
+		file.pipe( response );
+	};
+}
+
 var server = http.createServer(function( request, response ) {
 	var parsedUrl = url.parse( request.url, true );
 	var route = routes[ request.method ][ parsedUrl.pathname ] || notFound;
 
 	request.parsedUrl = parsedUrl;
 
+	console.log( "Received request for " + parsedUrl.pathname );
+
 	setTimeout(function() {
 		route( request, response );
 	});
 });
 
+var messageId = 0;
 server.messages = [];
 
-routes.GET[ "/" ] = function( request, response ) {
+routes.GET[ "/" ] = staticFile( "./index.html" );
+routes.GET[ "/client.js" ] = staticFile( "./client.js" );
+
+routes.GET[ "/join" ] = function( request, response ) {
 	var nick = request.parsedUrl.query.nick;
 
 	if ( !nick ) {
@@ -98,11 +116,42 @@ routes.GET[ "/msg" ] = function( request, response ) {
 		return;
 	}
 
-	server.messages.push({
+	var message = {
 		nick: users[ sessionId ].nick,
 		msg: request.parsedUrl.query.msg,
-		timestamp: new Date()
+		timestamp: new Date(),
+		id: messageId++
+	};
+	server.messages.push( message );
+
+	response.end();
+
+	pending.forEach(function( response ) {
+		response.write( JSON.stringify( [ message ] ) );
+		response.end();
 	});
+};
+
+routes.GET[ "/update" ] = function( request, response ) {
+	var sessionId = request.parsedUrl.query.session;
+	var since = request.parsedUrl.query.since;
+
+	if ( !users[ sessionId ] ) {
+		response.writeHead( 400 );
+		response.write( JSON.stringify({
+			msg: "Invalid session"
+		}));
+		response.end();
+		return;
+	}
+
+	var messages = server.messages.splice( since + 1 );
+	if ( !messages.length ) {
+		pending.push( response );
+		return;
+	}
+
+	response.write( JSON.stringify( messages ) );
 	response.end();
 };
 

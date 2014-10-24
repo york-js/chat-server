@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Chat</title>
+	<script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+	<script src="client.js"></script>
+	<style>
+	#chat {
+		display: none;
+	}
+	</style>
+</head>
+<body>
+
+<form id="login" action="/join">
+	<input id="nick">
+	<button type="submit">Join</button>
+</form>
+
+<form id="chat" action="/msg">
+	<div id="log"></div>
+	<input id="msg">
+	<button type="submit">Send</button>
+</form>
+
+</body>
+</html>
