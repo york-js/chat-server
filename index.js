@@ -2,6 +2,7 @@ var fs = require( "fs" );
 var http = require( "http" );
 var url = require( "url" );
 var crypto = require( "crypto" );
+var sqlite = require( "sqlite3" );
 
 process.on( "uncaughtException", function( error ) {
 	console.log( "OH NO" );
@@ -45,6 +46,21 @@ var server = http.createServer(function( request, response ) {
 		route( request, response );
 	});
 });
+
+
+
+var db = new sqlite.Database( "log.db" );
+db.run( "CREATE TABLE IF NOT EXISTS log(nick TEXT, msg TEXT, time INTEGER)",
+function( error ) {
+	if ( error ) {
+		console.log( "Error creating log table" );
+		return;
+	}
+
+	server.listen( 3000 );
+});
+
+
 
 var messageId = 0;
 server.messages = [];
@@ -130,6 +146,18 @@ routes.GET[ "/msg" ] = function( request, response ) {
 		response.write( JSON.stringify( [ message ] ) );
 		response.end();
 	});
+
+	db.run( "INSERT INTO log( nick, msg, time ) VALUES( ?, ?, ? )",
+		[ message.nick, message.msg, message.timestamp ],
+		function( error ) {
+			if ( error ) {
+				console.log( "Error storing message" );
+				console.log( error );
+				return;
+			}
+
+			console.log( "Stored message" );
+		});
 };
 
 routes.GET[ "/update" ] = function( request, response ) {
@@ -154,5 +182,3 @@ routes.GET[ "/update" ] = function( request, response ) {
 	response.write( JSON.stringify( messages ) );
 	response.end();
 };
-
-server.listen( 3000 );

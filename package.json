@@ -1,0 +1,22 @@
+{
+  "name": "chat-server",
+  "version": "0.0.0",
+  "description": "Chat server built by york.js",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/york-js/chat-server.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/york-js/chat-server/issues"
+  },
+  "homepage": "https://github.com/york-js/chat-server",
+  "dependencies": {
+    "sqlite3": "~3.0.2"
+  }
+}
